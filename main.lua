@@ -1,4 +1,4 @@
--- Save Files v1.0.0
+-- SaveMod v1.0.0
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
