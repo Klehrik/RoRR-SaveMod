@@ -1,5 +1,7 @@
 Allows you to save your ongoing runs.
 
+Does not work in multiplayer.
+
 ---
 
 ### Installation Instructions
