@@ -1,4 +1,4 @@
--- SaveMod v1.0.0
+-- SaveMod v1.0.1
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
@@ -34,13 +34,13 @@ function save_to_slot(slot)
     local hud = Helper.find_active_instance(gm.constants.oHUD)
     local player = Helper.get_client_player()
 
-    local survivor = gm.variable_global_get("class_survivor")[player.class + 1]
-    local difficulty = gm.variable_global_get("class_difficulty")[gm.variable_global_get("diff_level") + 1]
-    local artifact = gm.variable_global_get("class_artifact")
+    local class_survivor = gm.variable_global_get("class_survivor")[player.class + 1]
+    local class_difficulty = gm.variable_global_get("class_difficulty")[gm.variable_global_get("diff_level") + 1]
+    local class_artifact = gm.variable_global_get("class_artifact")
 
     local save = {
-        char_str = survivor[3],
-        diff_str = difficulty[3],
+        char_str = class_survivor[3],
+        diff_str = class_difficulty[3],
         date = gm.date_current_datetime(),
         stages_passed = director.stages_passed + 1,     -- Doesn't yet increment at the time of saving this
         
@@ -48,14 +48,13 @@ function save_to_slot(slot)
         stage_roll_value = stage_roll_value,
         time_start = director.time_start,
         time_total = director.time_total,
-        difficulty = difficulty[1].."-"..difficulty[2],
+        difficulty = class_difficulty[1].."-"..class_difficulty[2],
         artifacts = {},
 
         class = player.class,
         level = director.player_level,
         exp = director.player_exp,
         exp_req = director.player_exp_required,
-        gold = hud.gold,
         skills = {
             player.skills[1].active_skill.skill_id,
             player.skills[2].active_skill.skill_id,
@@ -68,7 +67,7 @@ function save_to_slot(slot)
     }
 
     for i = 1, artifact_count do
-        table.insert(save.artifacts, artifact[i][9])
+        table.insert(save.artifacts, class_artifact[i][9])
     end
 
     local items = Helper.get_all_items()
@@ -94,7 +93,7 @@ function load_from_slot(slot)
     local hud = Helper.find_active_instance(gm.constants.oHUD)
     local player = Helper.get_client_player()
 
-    local artifact = gm.variable_global_get("class_artifact")
+    local class_artifact = gm.variable_global_get("class_artifact")
 
     local save = saves[slot]
 
@@ -109,14 +108,13 @@ function load_from_slot(slot)
     gm.difficulty_set_active(gm.difficulty_find(save.difficulty))
 
     for i = 1, #save.artifacts do
-        artifact[i][9] = save.artifacts[i]
+        gm.array_set(class_artifact[i], 8, save.artifacts[i])
     end
 
     gm.player_set_class(player, save.class)
     director.player_level = save.level
     director.player_exp = save.exp
     director.player_exp_required = save.exp_req
-    hud.gold = save.gold
 
     for i = 1, 4 do gm.actor_skill_set(player, i - 1, save.skills[i]) end
 
@@ -160,6 +158,8 @@ end
 
 gui.add_imgui(function()
     if ready and not in_run and ImGui.Begin("Save Mod") then
+        ImGui.Text("Select a file and enter a run to load it.\nSelecting NEW FILE will save to a new slot.\nThis panel will be hidden in-run.")
+
         -- New file
         local c = current_file == 0 and "O" or "  "
         if ImGui.Button("("..c..")  NEW FILE") then

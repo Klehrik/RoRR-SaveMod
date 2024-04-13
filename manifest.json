@@ -1,6 +1,6 @@
 ﻿{
 	"name": "SaveMod",
-	"version_number": "1.0.0",
+	"version_number": "1.0.1",
 	"website_url": "https://github.com/Klehrik/RoRR-SaveMod",
 	"description": "Allows you to save your ongoing runs.",
 	"dependencies": [
