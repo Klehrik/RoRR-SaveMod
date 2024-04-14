@@ -1,4 +1,4 @@
--- SaveMod v1.0.1
+-- SaveMod v1.0.2
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
@@ -6,7 +6,7 @@ mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "tab
 
 local saves = {}
 
-local file_path = path.combine(paths.plugins_data(), _ENV["!guid"]..".txt")
+local file_path = path.combine(paths.plugins_data(), _ENV["!guid"].."-2.txt")
 local success, file = pcall(toml.decodeFromFile, file_path)
 if success then
     saves = file.saves
@@ -22,12 +22,11 @@ local loaded = false
 local months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 local artifact_count = 14   -- Why is the array 189 long lmao??
 
+local selectMenuHook = false
+
 
 
 -- ========== Functions ==========
-
--- TODO:
--- Save damage dealt and taken sliders
 
 function save_to_slot(slot)
     local director = Helper.find_active_instance(gm.constants.oDirectorControl)
@@ -37,6 +36,8 @@ function save_to_slot(slot)
     local class_survivor = gm.variable_global_get("class_survivor")[player.class + 1]
     local class_difficulty = gm.variable_global_get("class_difficulty")[gm.variable_global_get("diff_level") + 1]
     local class_artifact = gm.variable_global_get("class_artifact")
+    local class_item = gm.variable_global_get("class_item")
+    local class_equipment = gm.variable_global_get("class_equipment")
 
     local save = {
         char_str = class_survivor[3],
@@ -48,13 +49,17 @@ function save_to_slot(slot)
         stage_roll_value = stage_roll_value,
         time_start = director.time_start,
         time_total = director.time_total,
+        enemy_buff = director.enemy_buff,
         difficulty = class_difficulty[1].."-"..class_difficulty[2],
         artifacts = {},
 
         class = player.class,
         level = director.player_level,
+        gold = hud.gold,
         exp = director.player_exp,
         exp_req = director.player_exp_required,
+        infusion_hp = player.infusion_hp,
+        equipment = "",
         skills = {
             player.skills[1].active_skill.skill_id,
             player.skills[2].active_skill.skill_id,
@@ -62,7 +67,7 @@ function save_to_slot(slot)
             player.skills[4].active_skill.skill_id
         },
         items = {},
-
+        
         game_report = {},
     }
 
@@ -70,11 +75,14 @@ function save_to_slot(slot)
         table.insert(save.artifacts, class_artifact[i][9])
     end
 
-    local items = Helper.get_all_items()
-    for _, i in ipairs(items) do
-        local internal = i.namespace.."-"..i.identifier
+    local equip = class_equipment[gm.equipment_get(player) + 1]
+    save.equipment = equip[1].."-"..equip[2]
+
+    for _, i in ipairs(player.inventory_item_order) do
+        local item = class_item[i + 1]
+        local internal = item[1].."-"..item[2]
         if gm.item_find(internal) then
-            save.items[internal] = gm.item_count(player, gm.item_find(internal), false)
+            table.insert(save.items, {internal, gm.item_count(player, gm.item_find(internal), false)})
         end
     end
 
@@ -93,8 +101,6 @@ function load_from_slot(slot)
     local hud = Helper.find_active_instance(gm.constants.oHUD)
     local player = Helper.get_client_player()
 
-    local class_artifact = gm.variable_global_get("class_artifact")
-
     local save = saves[slot]
 
     -- Load file data
@@ -105,29 +111,40 @@ function load_from_slot(slot)
     director.time_start = save.time_start
     director.time_total = save.time_total
     hud.minute, hud.second = to_minutes(save.time_start)
+    director.enemy_buff = save.enemy_buff
     gm.difficulty_set_active(gm.difficulty_find(save.difficulty))
-
-    for i = 1, #save.artifacts do
-        gm.array_set(class_artifact[i], 8, save.artifacts[i])
-    end
 
     gm.player_set_class(player, save.class)
     director.player_level = save.level
+    hud.gold = save.gold
     director.player_exp = save.exp
     director.player_exp_required = save.exp_req
+    player.infusion_hp = save.infusion_hp
+    
+    local equip = gm.equipment_find(save.equipment)
+    if equip then gm.equipment_set(player, equip) end
 
     for i = 1, 4 do gm.actor_skill_set(player, i - 1, save.skills[i]) end
 
-    local items = Helper.get_all_items()
-    for _, i in ipairs(items) do
-        local internal = i.namespace.."-"..i.identifier
-        if save.items[internal] then
-            gm.item_give(player, gm.item_find(internal), save.items[internal], false)
-        end
+    for k, v in pairs(save.items) do
+        local item = gm.item_find(v[1])
+        if item then gm.item_give(player, item, v[2], false) end
     end
 
     for k, v in pairs(save.game_report) do
         gm.struct_set(player.game_report, k, v)
+    end
+end
+
+
+function load_artifacts_from_slot(slot)
+    local class_artifact = gm.variable_global_get("class_artifact")
+
+    local save = saves[slot]
+
+    -- Load artifact data
+    for i = 1, #save.artifacts do
+        gm.array_set(class_artifact[i], 8, save.artifacts[i])
     end
 end
 
@@ -169,7 +186,7 @@ gui.add_imgui(function()
         -- Saved files
         for i, s in ipairs(saves) do
 
-            -- Only show the save if the difficulty/other custom content actually exists
+            -- Only show the save if the difficulty actually exists
             if gm.difficulty_find(s.difficulty) then
                 local min, sec = to_minutes(s.time_start)
                 if min < 10 then min = "0"..min end
@@ -192,6 +209,17 @@ end)
 gm.pre_script_hook(gm.constants.__input_system_tick, function()
     ready = true
     local player = Helper.get_client_player()
+
+    -- Enable/disable artifacts before run start
+    if not selectMenuHook then
+        local sMenu = Helper.find_active_instance(gm.constants.oSelectMenu)
+        if sMenu then
+            selectMenuHook = true
+            gm.post_script_hook(gm.method_get_index(sMenu.run_start), function(self, other, result, args)
+                if current_file > 0 then load_artifacts_from_slot(current_file) end
+            end)
+        end
+    end
 
     -- Load save slot once everything is ready
     if in_run and (not loaded) then

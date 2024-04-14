@@ -1,4 +1,7 @@
-Allows you to save your ongoing runs.
+Allows you to save your ongoing runs.  
+
+Saves at the start of each stage.  
+A new file is created upon reaching Stage 2 (if NEW FILE is selected).  
 
 Does not work in multiplayer.
 
