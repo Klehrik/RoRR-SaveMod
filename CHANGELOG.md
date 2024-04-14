@@ -9,7 +9,7 @@
 * ! Does not load existing files from previous versions !
 * Change: Gold you manage to sneak into the next stage is now saved
 * Change: Items now load in order of acquiry
-* Fix: Some artifacts not toggling correctly
-* Fix: Enemy and chest scaling resetting
-* Fix: HP gained from Infusion not saving
-* Fix: Equipment not saving
+* Fix: Artifacts now toggle correctly
+* Fix: Enemy and chest scaling no longer reset
+* Fix: HP gained from Infusion is now saved
+* Fix: Equipment is now saved
