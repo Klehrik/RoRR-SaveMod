@@ -8,21 +8,21 @@ local saves = {}
 
 local file_path = path.combine(paths.plugins_data(), _ENV["!guid"].."-2.txt")
 local success, file = pcall(toml.decodeFromFile, file_path)
-if success then
-    saves = file.saves
-end
+if success then saves = file.saves end
 
 local ready = false
 local in_run = false
 local current_file = 0      -- 0 is New File
 local current_stage = nil
-local stage_roll_value = 0
 local loaded = false
 
 local months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
 local artifact_count = 14   -- Why is the array 189 long lmao??
 
-local selectMenuHook = false
+local select_menu_hook = false
+local dead_time = 0
+local dead_time_max = 2     -- Checks for player.dead being set for at least 2 frames
+                            -- This prevents OSP mod from deleting the save file
 
 
 
@@ -46,7 +46,7 @@ function save_to_slot(slot)
         stages_passed = director.stages_passed + 1,     -- Doesn't yet increment at the time of saving this
         
         stage = current_stage,
-        stage_roll_value = stage_roll_value,
+        stage_current_level = gm.variable_global_get("stage_current_level"),
         time_start = director.time_start,
         time_total = director.time_total,
         enemy_buff = director.enemy_buff,
@@ -59,6 +59,7 @@ function save_to_slot(slot)
         exp = director.player_exp,
         exp_req = director.player_exp_required,
         infusion_hp = player.infusion_hp,
+        skin_current = player.skin_current,
         equipment = "",
         skills = {
             player.skills[1].active_skill.skill_id,
@@ -67,6 +68,7 @@ function save_to_slot(slot)
             player.skills[4].active_skill.skill_id
         },
         items = {},
+        drones = {},
         
         game_report = {},
     }
@@ -76,13 +78,29 @@ function save_to_slot(slot)
     end
 
     local equip = class_equipment[gm.equipment_get(player) + 1]
-    save.equipment = equip[1].."-"..equip[2]
+    if equip then save.equipment = equip[1].."-"..equip[2] end
 
     for _, i in ipairs(player.inventory_item_order) do
         local item = class_item[i + 1]
         local internal = item[1].."-"..item[2]
-        if gm.item_find(internal) then
-            table.insert(save.items, {internal, gm.item_count(player, gm.item_find(internal), false)})
+        table.insert(save.items, {internal, gm.item_count(player, gm.item_find(internal), false)})
+    end
+
+    local drones_n = {"1", "2,", "3", "4", "5", "6", "7", "8", "9", "10", "Golem"}
+    local drones_s = {"", "B", "S"}
+    for _, n in ipairs(drones_n) do
+        for _, s in ipairs(drones_s) do
+            local drone_type = "oDrone"..n..s 
+            local drone_obj = gm.constants[drone_type]
+            if drone_obj then
+                local drone_insts = Helper.find_active_instance_all(drone_obj)
+                for _, d in ipairs(drone_insts) do
+                    if d.master == player then
+                        if not save.drones[drone_type] then save.drones[drone_type] = 0 end
+                        save.drones[drone_type] = save.drones[drone_type] + 1
+                    end
+                end
+            end
         end
     end
 
@@ -105,7 +123,7 @@ function load_from_slot(slot)
 
     -- Load file data
     gm.stage_goto(gm.stage_find(save.stage))    -- Adds 1 to stages_passed, which is decremented 3 lines below
-    stage_roll_value = save.stage_roll_value
+    gm.variable_global_set("stage_current_level", save.stage_current_level)
 
     director.stages_passed = save.stages_passed - 1
     director.time_start = save.time_start
@@ -120,15 +138,20 @@ function load_from_slot(slot)
     director.player_exp = save.exp
     director.player_exp_required = save.exp_req
     player.infusion_hp = save.infusion_hp
+    gm.actor_skin_set(player, save.skin_current)
     
     local equip = gm.equipment_find(save.equipment)
     if equip then gm.equipment_set(player, equip) end
 
     for i = 1, 4 do gm.actor_skill_set(player, i - 1, save.skills[i]) end
 
-    for k, v in pairs(save.items) do
-        local item = gm.item_find(v[1])
-        if item then gm.item_give(player, item, v[2], false) end
+    for _, i in ipairs(save.items) do
+        local item = gm.item_find(i[1])
+        if item then gm.item_give(player, item, i[2], false) end
+    end
+
+    for k, v in pairs(save.drones) do
+        for i = 1, v do gm.instance_create_depth(player.x, player.y, 0, gm.constants[k]) end
     end
 
     for k, v in pairs(save.game_report) do
@@ -211,10 +234,10 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function()
     local player = Helper.get_client_player()
 
     -- Enable/disable artifacts before run start
-    if not selectMenuHook then
+    if not select_menu_hook then
         local sMenu = Helper.find_active_instance(gm.constants.oSelectMenu)
         if sMenu then
-            selectMenuHook = true
+            select_menu_hook = true
             gm.post_script_hook(gm.method_get_index(sMenu.run_start), function(self, other, result, args)
                 if current_file > 0 then load_artifacts_from_slot(current_file) end
             end)
@@ -232,16 +255,13 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function()
     -- Delete save slot immediately on death
     -- and also upon leaving the planet
     local cmdFinal = Helper.find_active_instance(gm.constants.oCommandFinal)
-    if player and player.dead and current_file > 0 then delete_save_slot(current_file) end
+    if player then
+        if player.dead == true or player.dead == 1.0 then dead_time = math.min(dead_time + 1, dead_time_max)
+        else dead_time = 0
+        end
+        if dead_time >= dead_time_max and current_file > 0 then delete_save_slot(current_file) end
+    end
     if cmdFinal and cmdFinal.active > 0 then delete_save_slot(current_file) end
-end)
-
-
-gm.pre_script_hook(gm.constants.stage_roll_next, function(self, other, result, args)
-    -- Overwrite next stage value
-    stage_roll_value = stage_roll_value + 1
-    if stage_roll_value > 5 then stage_roll_value = 1 end
-    if args[1].value < 6.0 then args[1].value = stage_roll_value end
 end)
 
 
@@ -266,7 +286,6 @@ end)
 gm.pre_script_hook(gm.constants.run_create, function()
     in_run = true
     loaded = false
-    stage_roll_value = 0
 end)
 
 
