@@ -1,7 +1,7 @@
 Allows you to save your ongoing runs.  
-Does not save the stage layout or variant.  
 
 Saves at the start of each stage.  
+Does not save the stage layout or variant.  
 A new file is created upon reaching Stage 2 (if NEW FILE is selected).  
 
 Does not work in multiplayer (disable this mod when playing co-op).

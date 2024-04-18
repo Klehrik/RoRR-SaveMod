@@ -1,4 +1,4 @@
--- SaveMod v1.0.2
+-- SaveMod v1.0.3
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
@@ -23,6 +23,9 @@ local select_menu_hook = false
 local dead_time = 0
 local dead_time_max = 2     -- Checks for player.dead being set for at least 2 frames
                             -- This prevents OSP mod from deleting the save file
+                            -- UPDATE: This is no longer needed but I will keep it in just in case
+
+local sniper_Z = 65
 
 
 
@@ -62,10 +65,10 @@ function save_to_slot(slot)
         skin_current = player.skin_current,
         equipment = "",
         skills = {
-            player.skills[1].active_skill.skill_id,
-            player.skills[2].active_skill.skill_id,
-            player.skills[3].active_skill.skill_id,
-            player.skills[4].active_skill.skill_id
+            verify_skill(player.skills[1].active_skill.skill_id),
+            verify_skill(player.skills[2].active_skill.skill_id),
+            verify_skill(player.skills[3].active_skill.skill_id),
+            verify_skill(player.skills[4].active_skill.skill_id)
         },
         items = {},
         drones = {},
@@ -193,6 +196,12 @@ function get_name(local_str)
 end
 
 
+function verify_skill(skill_id)
+    if skill_id == 70 then skill_id = sniper_Z end
+    return skill_id
+end
+
+
 
 -- ========== Main ==========
 
@@ -249,6 +258,7 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function()
         if player then
             loaded = true
             if current_file > 0 then load_from_slot(current_file) end
+            if player.class == 7.0 then sniper_Z = player.skills[1].active_skill.skill_id end
         end
     end
 
