@@ -20,3 +20,6 @@
 ### v1.0.3
 * Fix: Sniper runs are no longer softlocked if you enter a new stage and quit before reloading
     * The "Reload" skill got saved instead of "Snipe"
+
+### v1.0.4
+* Should no longer crash on pressing "Try Again"

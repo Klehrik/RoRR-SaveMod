@@ -1,10 +1,10 @@
 ﻿{
 	"name": "SaveMod",
-	"version_number": "1.0.3",
+	"version_number": "1.0.4",
 	"website_url": "https://github.com/Klehrik/RoRR-SaveMod",
 	"description": "Allows you to save your ongoing runs.",
 	"dependencies": [
-		"ReturnOfModding-ReturnOfModding-1.0.23",
-		"Klehrik-HelperFunctions-1.0.4"
+		"ReturnOfModding-ReturnOfModding-1.0.31",
+		"Klehrik-HelperFunctions-1.0.5"
 	]
 }

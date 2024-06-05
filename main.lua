@@ -1,4 +1,4 @@
--- SaveMod v1.0.3
+-- SaveMod v1.0.4
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
@@ -114,6 +114,8 @@ function save_to_slot(slot)
 
     saves[slot] = save
     pcall(toml.encodeToFile, {saves = saves}, {file = file_path, overwrite = true})
+
+    log.info("SaveMod: Saved to Slot "..slot)
 end
 
 
@@ -277,18 +279,21 @@ end)
 
 gm.post_script_hook(gm.constants.stage_roll_next, function(self, other, result, args)
     if self.object_index ~= gm.constants.oSelectMenu then
-        -- Get the identifier of the current stage
-        local stage = gm.variable_global_get("class_stage")[result.value + 1]
-        current_stage = stage[1].."-"..stage[2]
+        local director = Helper.find_active_instance(gm.constants.oDirectorControl)
+        if director and director.time_total > 3.0 then
+            -- Get the identifier of the current stage
+            local stage = gm.variable_global_get("class_stage")[result.value + 1]
+            current_stage = stage[1].."-"..stage[2]
 
-        -- Create new save file
-        if current_file == 0 then
-            table.insert(saves, {})
-            current_file = #saves
+            -- Create new save file
+            if current_file == 0 then
+                table.insert(saves, {})
+                current_file = #saves
+            end
+
+            -- Overwrite current save slot
+            save_to_slot(current_file)
         end
-
-        -- Overwrite current save slot
-        save_to_slot(current_file)
     end
 end)
 
