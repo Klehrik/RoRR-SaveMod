@@ -23,3 +23,11 @@
 
 ### v1.0.4
 * Should no longer crash on pressing "Try Again"
+
+### v1.0.5
+* Changed ImGui window to use radio buttons instead
+* Reduced memory usage (I think)
+* Change: Temporary items are now saved
+* Fix: Crash when loading files with items that create RMT custom objects
+* Fix: Now shows the correct survivor on results screen
+* Fix: Should no longer throw an error when there are too many save files
