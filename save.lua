@@ -5,14 +5,14 @@ function save_to_slot(slot)
     local hud = Instance.find(gm.constants.oHUD)
     local player = Player.get_client()
 
-    local _survivor = class_survivor[player.class + 1]
-    local _difficulty = class_difficulty[gm.variable_global_get("diff_level") + 1]
+    local _survivor = gm.array_get(Class.SURVIVOR, player.class)
+    local _difficulty = gm.array_get(Class.DIFFICULTY, gm.variable_global_get("diff_level"))
 
 
     -- Base save table
     local save = {
-        char_str = _survivor[3],
-        diff_str = _difficulty[3],
+        char_str = gm.array_get(_survivor, 2),
+        diff_str = gm.array_get(_difficulty, 2),
         date = gm.date_current_datetime(),
         stages_passed = director.stages_passed + 1,     -- Doesn't yet increment at the time of saving this
         
@@ -21,7 +21,7 @@ function save_to_slot(slot)
         time_start = director.time_start,
         time_total = director.time_total,
         enemy_buff = director.enemy_buff,
-        difficulty = _difficulty[1].."-".._difficulty[2],
+        difficulty = gm.array_get(_difficulty, 0).."-"..gm.array_get(_difficulty, 1),
         artifacts = {},
 
         class = player.class,
@@ -33,10 +33,10 @@ function save_to_slot(slot)
         skin_current = player.skin_current,
         equipment = "",
         skills = {
-            player.skills[1].default_skill.skill_id,
-            player.skills[2].default_skill.skill_id,
-            player.skills[3].default_skill.skill_id,
-            player.skills[4].default_skill.skill_id
+            gm.array_get(player.skills, 0).default_skill.skill_id,
+            gm.array_get(player.skills, 1).default_skill.skill_id,
+            gm.array_get(player.skills, 2).default_skill.skill_id,
+            gm.array_get(player.skills, 3).default_skill.skill_id
         },
         items = {},
         drones = {},
@@ -47,22 +47,28 @@ function save_to_slot(slot)
 
     -- Artifacts
     local count = gm.variable_global_get("count_artifact")
-    for i = 1, count do
-        table.insert(save.artifacts, class_artifact[i][9])
+    for i = 0, count - 1 do
+        local _artifact = gm.array_get(Class.ARTIFACT, i)
+        table.insert(save.artifacts, gm.array_get(_artifact, 8))
     end
 
     -- Equipment
-    local equip = class_equipment[gm.equipment_get(player) + 1]
-    if equip then save.equipment = equip[1].."-"..equip[2] end
+    local equip_id = gm.equipment_get(player)
+    if equip_id >= 0 then
+        local equip = gm.array_get(Class.EQUIPMENT, gm.equipment_get(player))
+        save.equipment = gm.array_get(equip, 0).."-"..gm.array_get(equip, 1)
+    end
 
     -- Items
-    if gm.array_length(player.inventory_item_order) > 0.0 then
-        for _, i in ipairs(player.inventory_item_order) do
-            local item = Item.get_data(i)
+    local size = gm.array_length(player.inventory_item_order)
+    if size > 0 then
+        for i = 0, size - 1 do
+            local id = gm.array_get(player.inventory_item_order, i)
+            local item = Item.get_data(id)
             table.insert(save.items, {
                 item.namespace.."-"..item.identifier,
-                Item.get_stack_count(player, i, Item.TYPE.real),
-                Item.get_stack_count(player, i, Item.TYPE.temporary)
+                Item.get_stack_count(player, id, Item.TYPE.real),
+                Item.get_stack_count(player, id, Item.TYPE.temporary)
             })
         end
     end

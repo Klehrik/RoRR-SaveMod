@@ -31,3 +31,6 @@
 * Fix: Crash when loading files with items that create RMT custom objects
 * Fix: Now shows the correct survivor on results screen
 * Fix: Should no longer throw an error when there are too many save files
+
+### v1.0.6
+* Replaced lua syntax array accessing with gm.array_get

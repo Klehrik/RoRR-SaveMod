@@ -79,7 +79,7 @@ function load_artifacts_from_slot(slot)
 
     -- Artifacts
     for i = 1, #save.artifacts do
-        gm.array_set(class_artifact[i], 8, save.artifacts[i])
+        gm.array_set(gm.array_get(Class.ARTIFACT, i - 1), 8, save.artifacts[i])
     end
 end
 

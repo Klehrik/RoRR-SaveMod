@@ -1,8 +1,8 @@
--- SaveMod v1.0.5
+-- SaveMod v1.0.6
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
-mods.on_all_mods_loaded(function() for _, m in pairs(mods) do if type(m) == "table" and m.RoRR_Modding_Toolkit then Actor = m.Actor Buff = m.Buff Callback = m.Callback Equipment = m.Equipment Helper = m.Helper Instance = m.Instance Item = m.Item Net = m.Net Object = m.Object Player = m.Player Resources = m.Resources Survivor = m.Survivor break end end end)
+mods.on_all_mods_loaded(function() for _, m in pairs(mods) do if type(m) == "table" and m.RoRR_Modding_Toolkit then Actor = m.Actor Alarm = m.Alarm Buff = m.Buff Callback = m.Callback Class = m.Class Equipment = m.Equipment Helper = m.Helper Instance = m.Instance Item = m.Item Net = m.Net Object = m.Object Player = m.Player Resources = m.Resources Survivor = m.Survivor break end end end)
 
 require("./save")
 require("./load")
@@ -24,12 +24,6 @@ local file_loaded = 0
 
 current_stage = nil
 
-class_survivor = nil
-class_difficulty = nil
-class_artifact = nil
-class_item = nil
-class_equipment = nil
-class_stage = nil
 lang_map = nil
 
 
@@ -37,12 +31,6 @@ lang_map = nil
 -- ========== Main ==========
 
 function __initialize()
-    class_survivor = gm.variable_global_get("class_survivor")
-    class_difficulty = gm.variable_global_get("class_difficulty")
-    class_artifact = gm.variable_global_get("class_artifact")
-    class_item = gm.variable_global_get("class_item")
-    class_equipment = gm.variable_global_get("class_equipment")
-    class_stage = gm.variable_global_get("class_stage")
     lang_map = gm.variable_global_get("_language_map")
 end
 
@@ -123,8 +111,8 @@ gm.post_script_hook(gm.constants.stage_roll_next, function(self, other, result, 
         local director = Instance.find(gm.constants.oDirectorControl)
         if director and director.time_total > 3.0 then
             -- Get the identifier of the current stage
-            local stage = class_stage[result.value + 1]
-            current_stage = stage[1].."-"..stage[2]
+            local stage = gm.array_get(Class.STAGE, result.value)
+            current_stage = gm.array_get(stage, 0).."-"..gm.array_get(stage, 1)
 
             -- Create new save file
             if current_file == 0 then
@@ -142,8 +130,6 @@ end)
 gm.pre_script_hook(gm.constants.run_create, function(self, other, result, args)
     in_run = true
     file_loaded = 0
-
-    --if current_file > 0 then load_class_from_slot(current_file) end
 end)
 
 
