@@ -22,24 +22,23 @@ function load_from_slot(slot)
 
 
     -- Player stats
-    --gm.player_set_class(player, save.class)
     director.player_level = save.level
     hud.gold = save.gold
     director.player_exp = save.exp
     director.player_exp_required = save.exp_req
     player.infusion_hp = save.infusion_hp
-    gm.actor_skin_set(player, save.skin_current)
+    gm.actor_skin_set(player.value, save.skin_current)
     
     -- Equipment
     local equip = Equipment.find(save.equipment)
-    if equip then gm.equipment_set(player, equip) end
+    if equip then player:set_equipment(equip) end
 
     -- Skills
-    for i = 1, 4 do gm.actor_skill_set(player, i - 1, save.skills[i]) end
+    for i = 1, 4 do gm.actor_skill_set(player.value, i - 1, Skill.find(save.skills[i]).value) end
 
     -- Drones
     for k, v in pairs(save.drones) do
-        for i = 1, v do gm.instance_create_depth(player.x, player.y, 0, gm.constants[k]) end
+        for i = 1, v do Object.find("ror", k):create(player.x, player.y) end
     end
 
 
@@ -47,14 +46,12 @@ function load_from_slot(slot)
 end
 
 
-function load_class_from_slot(slot)
-    local player = Player.get_client()
-    
+function load_class_from_slot(slot)    
     local save = saves[slot]
 
     -- Class
     local s = Instance.find(gm.constants.oSelectMenu)
-    if s then gm.call(s.set_choice.script_name, s, s, save.class) end
+    if s:exists() then gm.call(s.set_choice.script_name, s.value, s.value, save.class) end
 end
 
 
@@ -67,8 +64,8 @@ function load_items_from_slot(slot)
     for _, i in ipairs(save.items) do
         local item = Item.find(i[1])
         if item then
-            gm.item_give(player, item, i[2], false)
-            if i[3] then gm.item_give(player, item, i[3], true) end
+            player:item_give(item, i[2], false)
+            if i[3] then player:item_give(item, i[3], true) end
         end
     end
 end
@@ -79,7 +76,7 @@ function load_artifacts_from_slot(slot)
 
     -- Artifacts
     for i = 1, #save.artifacts do
-        gm.array_set(gm.array_get(Class.ARTIFACT, i - 1), 8, save.artifacts[i])
+        Class.ARTIFACT:get(i - 1):set(8, save.artifacts[i])
     end
 end
 

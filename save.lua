@@ -5,14 +5,14 @@ function save_to_slot(slot)
     local hud = Instance.find(gm.constants.oHUD)
     local player = Player.get_client()
 
-    local _survivor = gm.array_get(Class.SURVIVOR, player.class)
-    local _difficulty = gm.array_get(Class.DIFFICULTY, gm.variable_global_get("diff_level"))
+    local _survivor = Class.SURVIVOR:get(player.class)
+    local _difficulty = Class.DIFFICULTY:get(gm.variable_global_get("diff_level"))
 
 
     -- Base save table
     local save = {
-        char_str = gm.array_get(_survivor, 2),
-        diff_str = gm.array_get(_difficulty, 2),
+        char_str = _survivor:get(2),
+        diff_str = _difficulty:get(2),
         date = gm.date_current_datetime(),
         stages_passed = director.stages_passed + 1,     -- Doesn't yet increment at the time of saving this
         
@@ -21,7 +21,7 @@ function save_to_slot(slot)
         time_start = director.time_start,
         time_total = director.time_total,
         enemy_buff = director.enemy_buff,
-        difficulty = gm.array_get(_difficulty, 0).."-"..gm.array_get(_difficulty, 1),
+        difficulty = _difficulty:get(0).."-".._difficulty:get(1),
         artifacts = {},
 
         class = player.class,
@@ -33,10 +33,10 @@ function save_to_slot(slot)
         skin_current = player.skin_current,
         equipment = "",
         skills = {
-            gm.array_get(player.skills, 0).default_skill.skill_id,
-            gm.array_get(player.skills, 1).default_skill.skill_id,
-            gm.array_get(player.skills, 2).default_skill.skill_id,
-            gm.array_get(player.skills, 3).default_skill.skill_id
+            player:get_skill(Skill.SLOT.primary).namespace.."-"..player:get_skill(Skill.SLOT.primary).identifier,
+            player:get_skill(Skill.SLOT.secondary).namespace.."-"..player:get_skill(Skill.SLOT.secondary).identifier,
+            player:get_skill(Skill.SLOT.utility).namespace.."-"..player:get_skill(Skill.SLOT.utility).identifier,
+            player:get_skill(Skill.SLOT.special).namespace.."-"..player:get_skill(Skill.SLOT.special).identifier,
         },
         items = {},
         drones = {},
@@ -48,27 +48,24 @@ function save_to_slot(slot)
     -- Artifacts
     local count = gm.variable_global_get("count_artifact")
     for i = 0, count - 1 do
-        local _artifact = gm.array_get(Class.ARTIFACT, i)
-        table.insert(save.artifacts, gm.array_get(_artifact, 8))
+        local _artifact = Class.ARTIFACT:get(i)
+        table.insert(save.artifacts, _artifact:get(8))
     end
 
     -- Equipment
-    local equip_id = gm.equipment_get(player)
-    if equip_id >= 0 then
-        local equip = gm.array_get(Class.EQUIPMENT, gm.equipment_get(player))
-        save.equipment = gm.array_get(equip, 0).."-"..gm.array_get(equip, 1)
-    end
+    local equip = player:get_equipment()
+    if equip then save.equipment = equip.namespace.."-"..equip.identifier end
 
     -- Items
-    local size = gm.array_length(player.inventory_item_order)
+    local size = #player.inventory_item_order
     if size > 0 then
         for i = 0, size - 1 do
-            local id = gm.array_get(player.inventory_item_order, i)
-            local item = Item.get_data(id)
+            local id = player.inventory_item_order:get(i)
+            local item = Item.wrap(id)
             table.insert(save.items, {
                 item.namespace.."-"..item.identifier,
-                Item.get_stack_count(player, id, Item.TYPE.real),
-                Item.get_stack_count(player, id, Item.TYPE.temporary)
+                player:item_stack_count(item, Item.TYPE.real),
+                player:item_stack_count(item, Item.TYPE.temporary)
             })
         end
     end
@@ -78,12 +75,12 @@ function save_to_slot(slot)
     local drones_s = {"", "B", "S"}
     for _, n in ipairs(drones_n) do
         for _, s in ipairs(drones_s) do
-            local drone_type = "oDrone"..n..s 
-            local drone_obj = gm.constants[drone_type]
+            local drone_type = "drone"..n..s 
+            local drone_obj = Object.find("ror", drone_type)
             if drone_obj then
                 local drone_insts = Instance.find_all(drone_obj)
                 for _, d in ipairs(drone_insts) do
-                    if d.master == player then
+                    if d.master:same(player) then
                         if not save.drones[drone_type] then save.drones[drone_type] = 0 end
                         save.drones[drone_type] = save.drones[drone_type] + 1
                     end

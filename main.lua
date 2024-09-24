@@ -1,8 +1,8 @@
--- SaveMod v1.0.6
+-- SaveMod v1.0.7
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
-mods.on_all_mods_loaded(function() for _, m in pairs(mods) do if type(m) == "table" and m.RoRR_Modding_Toolkit then Actor = m.Actor Alarm = m.Alarm Buff = m.Buff Callback = m.Callback Class = m.Class Equipment = m.Equipment Helper = m.Helper Instance = m.Instance Item = m.Item Net = m.Net Object = m.Object Player = m.Player Resources = m.Resources Survivor = m.Survivor break end end end)
+mods.on_all_mods_loaded(function() for _, m in pairs(mods) do if type(m) == "table" and m.RoRR_Modding_Toolkit then Achievement = m.Achievement Actor = m.Actor Alarm = m.Alarm Array = m.Array Artifact = m.Artifact Buff = m.Buff Callback = m.Callback Class = m.Class Color = m.Color Equipment = m.Equipment Helper = m.Helper Instance = m.Instance Interactable = m.Interactable Item = m.Item Language = m.Language List = m.List Net = m.Net Object = m.Object Player = m.Player Resources = m.Resources Skill = m.Skill State = m.State Survivor_Log = m.Survivor_Log Survivor = m.Survivor Wrap = m.Wrap break end end end)
 
 require("./save")
 require("./load")
@@ -71,7 +71,7 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, resul
     local player = Player.get_client()
 
     -- Load file when run is loaded
-    if in_run and file_loaded < 2 and player then
+    if in_run and file_loaded < 2 and player:exists() then
 
         if file_loaded == 0 then
             file_loaded = 1
@@ -91,13 +91,13 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, resul
     -- and also upon leaving the planet
     if in_run then
         local cmdFinal = Instance.find(gm.constants.oCommandFinal)
-        if player and player.dead then delete_save_slot(current_file) end
-        if cmdFinal and cmdFinal.active > 0 then delete_save_slot(current_file) end
+        if player:exists() and player.dead then delete_save_slot(current_file) end
+        if cmdFinal:exists() and cmdFinal.active > 0 then delete_save_slot(current_file) end
     end
 end)
 
 
-gm.pre_script_hook(106241.0, function(self, other, result, args)
+gm.post_script_hook(106241.0, function(self, other, result, args)
     -- Load saved class and artifacts
     if current_file > 0 then
         load_artifacts_from_slot(current_file)
@@ -111,8 +111,8 @@ gm.post_script_hook(gm.constants.stage_roll_next, function(self, other, result, 
         local director = Instance.find(gm.constants.oDirectorControl)
         if director and director.time_total > 3.0 then
             -- Get the identifier of the current stage
-            local stage = gm.array_get(Class.STAGE, result.value)
-            current_stage = gm.array_get(stage, 0).."-"..gm.array_get(stage, 1)
+            local stage = Class.STAGE:get(result.value)
+            current_stage = stage:get(0).."-"..stage:get(1)
 
             -- Create new save file
             if current_file == 0 then
