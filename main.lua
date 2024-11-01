@@ -1,8 +1,8 @@
--- SaveMod v1.0.7
+-- SaveMod
 -- Klehrik
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
-mods.on_all_mods_loaded(function() for _, m in pairs(mods) do if type(m) == "table" and m.RoRR_Modding_Toolkit then Achievement = m.Achievement Actor = m.Actor Alarm = m.Alarm Array = m.Array Artifact = m.Artifact Buff = m.Buff Callback = m.Callback Class = m.Class Color = m.Color Equipment = m.Equipment Helper = m.Helper Instance = m.Instance Interactable = m.Interactable Item = m.Item Language = m.Language List = m.List Net = m.Net Object = m.Object Player = m.Player Resources = m.Resources Skill = m.Skill State = m.State Survivor_Log = m.Survivor_Log Survivor = m.Survivor Wrap = m.Wrap break end end end)
+mods["RoRRModdingToolkit-RoRR_Modding_Toolkit"].auto()
 
 require("./save")
 require("./load")
@@ -24,16 +24,9 @@ local file_loaded = 0
 
 current_stage = nil
 
-lang_map = nil
-
 
 
 -- ========== Main ==========
-
-function __initialize()
-    lang_map = gm.variable_global_get("_language_map")
-end
-
 
 gui.add_imgui(function()
     if game_loaded and (not in_run) and Net.get_type() == Net.TYPE.single
@@ -55,7 +48,7 @@ gui.add_imgui(function()
 
                 local date = months[gm.date_get_month(save.date)].." "..math.floor(gm.date_get_day(save.date))..", "..math.floor(gm.date_get_year(save.date))
 
-                local value, pressed = ImGui.RadioButton("[FILE "..i.."]  "..get_name(save.char_str).."  |  "..get_name(save.diff_str)..", "..min..":"..sec..", Stage "..math.floor(save.stages_passed + 1).."  |  "..date, current_file, i)
+                local value, pressed = ImGui.RadioButton("[FILE "..i.."]  "..Language.translate_token(save.char_str).."  |  "..Language.translate_token(save.diff_str)..", "..min..":"..sec..", Stage "..math.floor(save.stages_passed + 1).."  |  "..date, current_file, i)
                 if pressed then current_file = value end
             end
         end

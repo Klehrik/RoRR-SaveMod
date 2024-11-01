@@ -5,14 +5,6 @@ function seconds_to_minutes(seconds)
 end
 
 
-function get_name(local_str)
-    -- Accounts for stuff that doesn't use localization strings
-    local l = gm.ds_map_find_value(lang_map, local_str)
-    if l then return l end
-    return local_str
-end
-
-
 function delete_save_slot(slot)
     if slot == 0 then return end
     

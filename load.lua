@@ -88,6 +88,7 @@ function load_game_report_from_slot(slot)
 
     -- Game Report
     for k, v in pairs(save.game_report) do
+        if k == "stages_completed" then v = v + 1 end   -- Fix off-by-one
         gm.struct_set(player.game_report, k, v)
     end
 end

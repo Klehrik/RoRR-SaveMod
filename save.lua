@@ -32,12 +32,7 @@ function save_to_slot(slot)
         infusion_hp = player.infusion_hp,
         skin_current = player.skin_current,
         equipment = "",
-        skills = {
-            player:get_skill(Skill.SLOT.primary).namespace.."-"..player:get_skill(Skill.SLOT.primary).identifier,
-            player:get_skill(Skill.SLOT.secondary).namespace.."-"..player:get_skill(Skill.SLOT.secondary).identifier,
-            player:get_skill(Skill.SLOT.utility).namespace.."-"..player:get_skill(Skill.SLOT.utility).identifier,
-            player:get_skill(Skill.SLOT.special).namespace.."-"..player:get_skill(Skill.SLOT.special).identifier,
-        },
+        skills = {},
         items = {},
         drones = {},
         
@@ -50,6 +45,12 @@ function save_to_slot(slot)
     for i = 0, count - 1 do
         local _artifact = Class.ARTIFACT:get(i)
         table.insert(save.artifacts, _artifact:get(8))
+    end
+
+    -- Skills
+    for s = 1, 4 do
+        local skill = Skill.wrap(player:get_default_skill(s - 1).skill_id)
+        save.skills[s] = skill.namespace.."-"..skill.identifier
     end
 
     -- Equipment
