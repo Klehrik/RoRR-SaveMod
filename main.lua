@@ -31,6 +31,12 @@ current_stage = nil
 gui.add_imgui(function()
     if game_loaded and (not in_run) and Net.get_type() == Net.TYPE.single
     and ImGui.Begin("Save Mod") then
+        -- Minimum size 600x400
+        local size_x, size_y = ImGui.GetWindowSize()
+        size_x = math.max(size_x, 600)
+        size_y = math.max(size_y, 400)
+        ImGui.SetWindowSize(size_x, size_y)
+        
         ImGui.Text("Select a file and enter a run to load it.\nSelecting NEW FILE will save to a new slot.\nThis panel will be hidden in-run.")
 
         -- New file
@@ -41,7 +47,7 @@ gui.add_imgui(function()
         for i, save in ipairs(saves) do
 
             -- Only show the save if the difficulty actually exists
-            if gm.difficulty_find(save.difficulty) then
+            if Difficulty.find(save.difficulty) then
                 local min, sec = seconds_to_minutes(save.time_start)
                 if min < 10 then min = "0"..min end
                 if sec < 10 then sec = "0"..sec end

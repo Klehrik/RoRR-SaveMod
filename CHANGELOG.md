@@ -1,3 +1,8 @@
+### v1.0.9
+* Updated alongside RMT.
+* Now sets the minimum ImGui window size to 600x400.
+* More values saved as namespace-identifiers now instead of ID numbers.
+
 ### v1.0.8
 * Fixed off-by-one error in "Stages Completed" on the stats screen.
 * Fixed incorrect skill saving for skills that are changed (e.g., Sniper's Z and V)

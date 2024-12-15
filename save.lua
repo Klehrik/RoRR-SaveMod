@@ -5,14 +5,14 @@ function save_to_slot(slot)
     local hud = Instance.find(gm.constants.oHUD)
     local player = Player.get_client()
 
-    local _survivor = Class.SURVIVOR:get(player.class)
-    local _difficulty = Class.DIFFICULTY:get(gm.variable_global_get("diff_level"))
+    local _survivor = Survivor.wrap(player.class)
+    local _difficulty = Difficulty.wrap(gm.variable_global_get("diff_level"))
 
 
     -- Base save table
     local save = {
-        char_str = _survivor:get(2),
-        diff_str = _difficulty:get(2),
+        char_str = _survivor.token_name,
+        diff_str = _difficulty.token_name,
         date = gm.date_current_datetime(),
         stages_passed = director.stages_passed + 1,     -- Doesn't yet increment at the time of saving this
         
@@ -21,10 +21,10 @@ function save_to_slot(slot)
         time_start = director.time_start,
         time_total = director.time_total,
         enemy_buff = director.enemy_buff,
-        difficulty = _difficulty:get(0).."-".._difficulty:get(1),
+        difficulty = _difficulty.namespace.."-".._difficulty.identifier,
         artifacts = {},
 
-        class = player.class,
+        class = _survivor.namespace.."-".._survivor.identifier,
         level = director.player_level,
         gold = hud.gold,
         exp = director.player_exp,
@@ -36,15 +36,17 @@ function save_to_slot(slot)
         items = {},
         drones = {},
         
-        game_report = {},
+        game_report = {}
     }
 
 
     -- Artifacts
     local count = gm.variable_global_get("count_artifact")
     for i = 0, count - 1 do
-        local _artifact = Class.ARTIFACT:get(i)
-        table.insert(save.artifacts, _artifact:get(8))
+        local _artifact = Artifact.wrap(i)
+        if Helper.is_true(_artifact.active) then
+            table.insert(save.artifacts, _artifact.namespace.."-".._artifact.identifier)
+        end
     end
 
     -- Skills
@@ -65,8 +67,8 @@ function save_to_slot(slot)
             local item = Item.wrap(id)
             table.insert(save.items, {
                 item.namespace.."-"..item.identifier,
-                player:item_stack_count(item, Item.TYPE.real),
-                player:item_stack_count(item, Item.TYPE.temporary)
+                player:item_stack_count(item, Item.STACK_KIND.normal),
+                player:item_stack_count(item, Item.STACK_KIND.temporary_blue)
             })
         end
     end

@@ -18,7 +18,7 @@ function load_from_slot(slot)
     director.time_total = save.time_total
     hud.minute, hud.second = seconds_to_minutes(save.time_start)
     director.enemy_buff = save.enemy_buff
-    gm.difficulty_set_active(gm.difficulty_find(save.difficulty))
+    gm.difficulty_set_active(Difficulty.find(save.difficulty).value)
 
 
     -- Player stats
@@ -32,6 +32,14 @@ function load_from_slot(slot)
     -- Equipment
     local equip = Equipment.find(save.equipment)
     if equip then player:set_equipment(equip) end
+
+    -- Legacy Skills: Convert ID number to ns-id
+    if type(save.skills[1]) == "number" then
+        for i = 1, 4 do
+            local _skill = Skill.wrap(save.skills[i])
+            save.skills[i] = _skill.namespace.."-".._skill.identifier
+        end
+    end
 
     -- Skills
     for i = 1, 4 do gm.actor_skill_set(player.value, i - 1, Skill.find(save.skills[i]).value) end
@@ -49,9 +57,15 @@ end
 function load_class_from_slot(slot)    
     local save = saves[slot]
 
+    -- Legacy: Convert ID number to ns-id
+    if type(save.class) == "number" then
+        local surv = Survivor.wrap(save.class)
+        save.class = surv.namespace.."-"..surv.identifier
+    end
+
     -- Class
     local s = Instance.find(gm.constants.oSelectMenu)
-    if s:exists() then gm.call(s.set_choice.script_name, s.value, s.value, save.class) end
+    if s:exists() then gm.call(s.set_choice.script_name, s.value, s.value, Survivor.find(save.class).value) end
 end
 
 
@@ -64,8 +78,8 @@ function load_items_from_slot(slot)
     for _, i in ipairs(save.items) do
         local item = Item.find(i[1])
         if item then
-            player:item_give(item, i[2], false)
-            if i[3] then player:item_give(item, i[3], true) end
+            player:item_give(item, i[2])
+            if i[3] then player:item_give(item, i[3], Item.STACK_KIND.temporary_blue) end
         end
     end
 end
@@ -74,9 +88,33 @@ end
 function load_artifacts_from_slot(slot)
     local save = saves[slot]
 
+    -- Legacy: Convert bool to ns-id
+    local _artifacts = {}
+    local type_first = type(save.artifacts[1])
+    if type_first == "number"
+    or type_first == "boolean" then
+        for i, v in ipairs(save.artifacts) do
+            if Helper.is_true(v) then
+                local art = Artifact.wrap(i - 1)
+                log.info(i..", "..tostring(art))
+                if art then
+                    table.insert(_artifacts, art.namespace.."-"..art.identifier)
+                end
+            end
+        end
+        save.artifacts = _artifacts
+    end
+
     -- Artifacts
-    for i = 1, #save.artifacts do
-        Class.ARTIFACT:get(i - 1):set(8, save.artifacts[i])
+    local count = gm.variable_global_get("count_artifact")
+    for i = 0, count - 1 do
+        local art = Artifact.wrap(i)
+        art.active = false
+    end
+
+    for _, v in ipairs(save.artifacts) do
+        local art = Artifact.find(v)
+        art.active = true
     end
 end
 
