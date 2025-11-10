@@ -62,7 +62,7 @@ function save_to_slot(self)
         if Util.bool(artifact.active) then
             table.insert(save.artifacts, {
                 namespace  = artifact.namespace,
-                identifier = artiface.identifier
+                identifier = artifact.identifier
             })
         end
     end

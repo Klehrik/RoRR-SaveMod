@@ -83,6 +83,21 @@ __content = Element.new(
                 gm.draw_sprite(spr, 2, spr_x, spr_y)
             end
 
+            local artifact_count = #save.artifacts
+            local spacing = 24
+            local x_offset = 264 - (math.min(artifact_count - 1, 3) * spacing)
+            for i = 1, math.min(artifact_count, 4) do
+                local artifact_t = save.artifacts[i]
+                local artifact = Artifact.find(artifact_t.identifier, artifact_t.namespace)
+                if artifact and artifact.sprite_loadout_id then
+                    gm.draw_sprite_ext(artifact.sprite_loadout_id, 1, x + x_offset, y + 84, 0.75, 0.75, 0, Color.WHITE, 1)
+                end
+                x_offset = x_offset + spacing 
+            end
+            if artifact_count > 4 then
+                scribble_draw_with_shadow(x + 294, y + 78, "<fa_right><b>+"..(artifact_count - 4))
+            end
+
 
         else
             gm.draw_set_color(Color(0x1b1b22))
