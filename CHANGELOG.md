@@ -1,3 +1,7 @@
+### v1.1.0
+* Update to use RAPI
+* Revamp UI
+
 ### v1.0.9
 * Updated alongside RMT.
 * Now sets the minimum ImGui window size to 600x400.

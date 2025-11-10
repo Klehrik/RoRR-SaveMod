@@ -1,2 +1,0 @@
-- Make skills save the namespace-identifier instead of skill ID
-    - Detect skill ID for compatibility though (don't want to make a third save version)
