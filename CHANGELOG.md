@@ -1,5 +1,6 @@
 ### v1.1.1
 * Fix crash when loading certain items
+* Add hourglass icon beside run time in UI
 
 ### v1.1.0
 * Update to use RAPI

@@ -1,6 +1,7 @@
 -- Render
 
 local sSave = Sprite.new("save", "~/save.png", 2, 0, 0)
+Sprite.new("saveModTimer", "~/timer.png", 2)
 
 local bg_surf
 
@@ -70,7 +71,11 @@ __content = Element.new(
             end
 
             local min, sec = format_time(save.time.start)
-            scribble_draw_with_shadow(x + 10, y + 42, "<lt>"..min..":"..sec)
+            local formatted = min..":"..sec
+            gm.scribble_draw(x + 11, y + 42, "<spr saveModTimer 2>  <bl>"..formatted)
+            gm.scribble_draw(x + 11, y + 43, "<spr saveModTimer 2>  <bl>"..formatted)
+            gm.scribble_draw(x + 10, y + 43, "<spr saveModTimer 2>  <bl>"..formatted)
+            gm.scribble_draw(x + 10, y + 42, "<spr saveModTimer 1>  <lt>"..formatted)
 
             local year, month, day = format_date(save.date)
             scribble_draw_with_shadow(x + 10, y + 78, "<lt>Last played: "..year.."/"..month.."/"..day)

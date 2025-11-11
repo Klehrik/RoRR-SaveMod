@@ -2,7 +2,7 @@
 
 function scribble_draw_with_shadow(x, y, str)
     local bstr = "<bl>"..str:gsub("<.->", "")
-    if str:find("<fa_right>")   then bstr = "<fa_right>"..bstr end
+    if str:find("<fa_right>") then bstr = "<fa_right>"..bstr end
     local xs = {1, 1, 0}
     local ys = {0, 1, 1}
     for i = 1, #xs do
