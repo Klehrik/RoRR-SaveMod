@@ -1,6 +1,7 @@
 ### v1.1.1
 * Fix crash when loading certain items
 * Add hourglass icon beside run time in UI
+* Prevent incrementing `games_played_total` and `survivor_*_games_played` when loading a save
 
 ### v1.1.0
 * Update to use RAPI

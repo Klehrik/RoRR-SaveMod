@@ -229,6 +229,10 @@ function load_from_slot(self)
     for k, v in pairs(save.game_report) do
         player.game_report[k] = v
     end
+
+    -- Prevent save file stat increment
+    gm.save_stat_increment("games_played_total", -1)
+    gm.save_stat_increment(gm.survivor_get_stat_key_games_played(player.class), -1)
 end
 
 
