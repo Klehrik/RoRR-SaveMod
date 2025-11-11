@@ -198,13 +198,16 @@ function load_from_slot(self)
     end
 
     -- Items
-    for _, item_t in ipairs(save.items) do
-        local item = Item.find(item_t.identifier, item_t.namespace)
-        if item then
-            if item_t.real > 0 then player:item_give(item, item_t.real) end
-            if item_t.fake > 0 then player:item_give(item, item_t.temp, Item.StackKind.TEMPORARY_BLUE) end
+    -- Need to delay a frame to prevent crash when loading certain items
+    Alarm.add(1, function()
+        for _, item_t in ipairs(save.items) do
+            local item = Item.find(item_t.identifier, item_t.namespace)
+            if item then
+                if item_t.real > 0 then player:item_give(item, item_t.real) end
+                if item_t.fake > 0 then player:item_give(item, item_t.temp, Item.StackKind.TEMPORARY_BLUE) end
+            end
         end
-    end
+    end)
     
     -- Equipment
     local equipment = Equipment.find(save.equipment.identifier, save.equipment.namespace)

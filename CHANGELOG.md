@@ -1,3 +1,6 @@
+### v1.1.1
+* Fix crash when loading certain items
+
 ### v1.1.0
 * Update to use RAPI
 * Revamp UI
