@@ -246,8 +246,11 @@ function load_from_slot(self)
         -- Handle this separately since it's an array of bools
         if k == "stat_coop_trophy" then
             player.game_report[k] = Array.new(12, false)
-            for i, v2 in ipairs(v) do
-                player.game_report[k][i] = v2
+
+            if type(v) == "table" then
+                for i, v2 in ipairs(v) do
+                    player.game_report[k][i] = v2
+                end
             end
             
         else
