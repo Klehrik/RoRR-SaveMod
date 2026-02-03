@@ -231,6 +231,8 @@ local queue = Queue.new()
 Hook.add_post(gm.constants.ui_draw_header_menu_tabs, function(self, other, result, args)
     if not Instance.exists(gm.constants.oSelectMenu) then return end
     if Net.online then return end
+    if Instance.exists(gm.constants.oSelectMenuLocalJoinUI) then return end
+    if Instance.count(gm.constants.oSelectPlayerIcon) > 1 then return end
 
     queue:add_recursive(__content)
     queue:draw()

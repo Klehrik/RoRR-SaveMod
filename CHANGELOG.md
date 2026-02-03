@@ -1,3 +1,7 @@
+### v1.1.2
+* Fix results screen being borked when loading a save
+* Disable for local coop
+
 ### v1.1.1
 * Fix crash when loading certain items
 * Add hourglass icon beside run time in UI

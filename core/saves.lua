@@ -8,6 +8,8 @@ __current = 0
 
 function save_to_slot(self)
     if Net.online then return end
+    local init = Instance.find(gm.constants.oInit)
+    if Instance.exists(init) and init.player_number > 1 then return end
 
     -- Use next slot index for new file
     if __current <= 0 then __current = #__saves + 1 end
@@ -125,11 +127,24 @@ function save_to_slot(self)
 
     -- Game report
     for k, v in pairs(player.game_report) do
-        save.game_report[k] = v
+
+        -- Handle this separately since it's an array of bools
+        if k == "stat_coop_trophy" then
+            save.game_report[k] = {}
+            for i, v2 in ipairs(v) do
+                save.game_report[k][i] = v2
+            end
+
+        else
+            save.game_report[k] = v
+
+        end
     end
 
     __saves[__current] = save
     file:write({saves = __saves})
+
+    print("Saved to slot "..__current)
 end
 
 
@@ -227,12 +242,25 @@ function load_from_slot(self)
 
     -- Game report
     for k, v in pairs(save.game_report) do
-        player.game_report[k] = v
+
+        -- Handle this separately since it's an array of bools
+        if k == "stat_coop_trophy" then
+            player.game_report[k] = Array.new(12, false)
+            for i, v2 in ipairs(v) do
+                player.game_report[k][i] = v2
+            end
+            
+        else
+            player.game_report[k] = v
+
+        end
     end
 
     -- Prevent save file stat increment
     gm.save_stat_increment("games_played_total", -1)
     gm.save_stat_increment(gm.survivor_get_stat_key_games_played(player.class), -1)
+
+    print("Loaded from slot "..__current)
 end
 
 

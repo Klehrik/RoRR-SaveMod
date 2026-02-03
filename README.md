@@ -2,7 +2,7 @@ Allows you to save your ongoing runs.
 
 Saves at the start of each stage (does not save the stage layout or variant).  
 
-Disabled in online play.  
+Disabled in online play and local coop.  
 
 ---
 
