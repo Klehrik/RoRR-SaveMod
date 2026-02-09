@@ -27,18 +27,19 @@ function save_to_slot(self)
 
     local save = {
         survivor = {
-            namespace = survivor.namespace,
-            identifier = survivor.identifier,
+            namespace   = survivor.namespace,
+            identifier  = survivor.identifier,
         },
         stage = {
-            namespace = stage.namespace,
-            identifier = stage.identifier,
-            current_level = Global.stage_current_level, -- Loops back to 1 on loop
-            current_total = self.stages_passed + 2,
+            namespace       = stage.namespace,
+            identifier      = stage.identifier,
+            variant         = Global.stage_variant,
+            current_level   = Global.stage_current_level, -- Loops back to 1 on loop
+            current_total   = self.stages_passed + 2,
         },
         difficulty = {
-            namespace = difficulty.namespace,
-            identifier = difficulty.identifier,
+            namespace   = difficulty.namespace,
+            identifier  = difficulty.identifier,
         },
         artifacts = {},
         time = {
@@ -48,18 +49,22 @@ function save_to_slot(self)
         date = gm.date_current_datetime(),
 
         -- Other
-        enemy_buff = self.enemy_buff,
-        gold = hud.gold,
-        level = self.player_level,
-        exp = self.player_exp,
-        exp_required = self.player_exp_required,
-        infusion_hp = player.infusion_hp,
-        skin_current = player.skin_current,
-        skills = {},
-        items = {},
-        equipment = {},
-        drones = {},
-        game_report = {},
+        enemy_buff      = self.enemy_buff,
+        gold            = hud.gold,
+        level           = self.player_level,
+        exp             = self.player_exp,
+        exp_required    = self.player_exp_required,
+        infusion_hp     = player.infusion_hp,
+        skin_current    = player.skin_current,
+        skills          = {},
+        items           = {},
+        equipment       = {},
+        drones          = {},
+        game_report     = {},
+
+        -- Huntress "The Hunt" achievement
+        huntress_boss_unique_kill_flags = player.huntress_boss_unique_kill_flags,
+        huntress_boss_unique_kills      = player.huntress_boss_unique_kills,
     }
 
     -- Artifacts
@@ -191,7 +196,9 @@ function load_from_slot(self)
 
     -- Go to saved stage
     local stage = Stage.find(save.stage.identifier, save.stage.namespace)
-    if stage then GM.stage_goto(stage) end
+    if stage then
+        GM.stage_goto(stage, save.stage.variant)
+    end
 
     -- Run data
     Global.stage_current_level = save.stage.current_level
@@ -266,6 +273,12 @@ function load_from_slot(self)
             player.game_report[k] = v
 
         end
+    end
+
+    -- Huntress "The Hunt" achievement
+    if save.huntress_boss_unique_kill_flags then
+        player.huntress_boss_unique_kill_flags = save.huntress_boss_unique_kill_flags
+        player.huntress_boss_unique_kills      = save.huntress_boss_unique_kills
     end
 
     -- Custom data
