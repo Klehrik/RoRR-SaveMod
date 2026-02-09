@@ -1,3 +1,6 @@
+### v1.1.3
+* Add `"save"`/`"load"` callbacks for other mods to add custom data
+
 ### v1.1.2
 * Fix results screen being borked when loading a save
 * Disable for local coop

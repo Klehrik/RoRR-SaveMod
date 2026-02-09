@@ -1,21 +1,19 @@
 -- SaveMod
 
+mods["LuaENVY-ENVY"].auto()
 mods["ReturnsAPI-ReturnsAPI"].auto{
     namespace   = "saveMod",
-    mp          = true
+    mp          = true  -- Safe because it's disabled online
 }
 
-local fn = function()
-    hotloaded = true
+Initialize.add_hotloadable(Callback.Priority.BEFORE, function()
     require("./ui/element")
     require("./ui/queue")
     require("./ui/mouse")
     require("./core/util")
     require("./core/saves")
     require("./core/render")
-end
-Initialize.add(fn)
-if hotloaded then fn() end
+end)
 
 
 

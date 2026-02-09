@@ -5,6 +5,10 @@ local read = file:read()
 __saves = (read and read.saves) or {}
 __current = 0
 
+-- For other mods to save/load custom data
+local callback_save = Callback.new("save")
+local callback_load = Callback.new("load")
+
 
 function save_to_slot(self)
     if Net.online then return end
@@ -141,6 +145,11 @@ function save_to_slot(self)
         end
     end
 
+    -- Custom data
+    local data = {}
+    Callback.call(callback_save, data)
+    save.custom_data = data
+
     __saves[__current] = save
     file:write({saves = __saves})
 
@@ -257,6 +266,11 @@ function load_from_slot(self)
             player.game_report[k] = v
 
         end
+    end
+
+    -- Custom data
+    if save.custom_data then
+        Callback.call(callback_load, save.custom_data)
     end
 
     -- Prevent save file stat increment
