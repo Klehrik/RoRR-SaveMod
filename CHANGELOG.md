@@ -1,7 +1,7 @@
 ### v1.1.4
 * Save progress for the following:
     * Stage variant
-    * Huntress' "The Hunt" achievement
+    * Huntress' "The Hunt" achievement progress
 
 ### v1.1.3
 * Add `"save"`/`"load"` callbacks for other mods to add custom data
