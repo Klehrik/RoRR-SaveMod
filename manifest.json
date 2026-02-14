@@ -4,7 +4,7 @@
 	"website_url": "https://github.com/Klehrik/RoRR-SaveMod",
 	"description": "Allows you to save your ongoing runs.",
 	"dependencies": [
-		"ReturnOfModding-ReturnOfModding-1.1.14",
+		"ReturnOfModding-ReturnOfModding-1.1.16",
 		"ReturnsAPI-ReturnsAPI-0.1.44",
 		"LuaENVY-ENVY-1.2.0"
 	]
