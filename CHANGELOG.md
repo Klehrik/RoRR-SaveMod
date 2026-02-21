@@ -1,3 +1,6 @@
+### v1.1.5
+* Change custom callback calling to new syntax
+
 ### v1.1.4
 * Save progress for the following:
     * Stage variant

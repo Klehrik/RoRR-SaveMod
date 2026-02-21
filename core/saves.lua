@@ -150,9 +150,9 @@ function save_to_slot(self)
         end
     end
 
-    -- Custom data
+    -- Collect custom data
     local data = {}
-    Callback.call(callback_save, data)
+    callback_save:call(data)
     save.custom_data = data
 
     __saves[__current] = save
@@ -281,9 +281,9 @@ function load_from_slot(self)
         player.huntress_boss_unique_kills      = save.huntress_boss_unique_kills
     end
 
-    -- Custom data
+    -- Load custom data
     if save.custom_data then
-        Callback.call(callback_load, save.custom_data)
+        callback_load:call(save.custom_data)
     end
 
     -- Prevent save file stat increment
