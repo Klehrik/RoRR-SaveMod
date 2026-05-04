@@ -1,3 +1,7 @@
+### v1.1.6
+* Prevent `stage_goto` and `ON_STAGE_START` from running twice when loading a save
+* Add public method `is_loading`
+
 ### v1.1.5
 * Change custom callback calling to new syntax
 

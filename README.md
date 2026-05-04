@@ -13,6 +13,13 @@ Callback.find("save", "saveMod")    -- Runs on file save
 Callback.find("load", "saveMod")    -- Runs on file load
 ```
 
+### Public Methods
+```lua
+local SaveMod = mods["Klehrik-SaveMod"]
+
+SaveMod.is_loading()    -- `true` if a save file is currently being loaded
+```
+
 ---
 
 ### Installation Instructions

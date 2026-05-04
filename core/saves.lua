@@ -145,6 +145,9 @@ function save_to_slot(self)
             end
 
         else
+            -- Fix off-by-1 error when saving stage completion count (introduced in v1.1.6)
+            if k == "stages_completed" then v = v + 1 end
+
             save.game_report[k] = v
 
         end
@@ -164,6 +167,7 @@ end
 
 function load_survivor_from_slot(self)
     if __current <= 0 then return end
+    _is_loading = true
     local save = __saves[__current]
 
     -- Survivor
@@ -174,6 +178,7 @@ end
 
 function load_artifacts_from_slot()
     if __current <= 0 then return end
+    _is_loading = true
     local save = __saves[__current]
 
     -- Artifacts
@@ -188,21 +193,29 @@ function load_artifacts_from_slot()
 end
 
 
+function load_stage_from_slot()
+    if __current <= 0 then return end
+    _is_loading = true
+    local save = __saves[__current]
+
+    -- Return saved stage and variant
+    local stage = Stage.find(save.stage.identifier, save.stage.namespace)
+    if stage then
+        return stage, save.stage.variant
+    end
+end
+
+
 function load_from_slot(self)
     if __current <= 0 then return end
+    _is_loading = true
     local save = __saves[__current]
     local hud = Instance.find(gm.constants.oHUD)
     local player = Player.get_local()
 
-    -- Go to saved stage
-    local stage = Stage.find(save.stage.identifier, save.stage.namespace)
-    if stage then
-        GM.stage_goto(stage, save.stage.variant)
-    end
-
     -- Run data
     Global.stage_current_level = save.stage.current_level
-    self.stages_passed = save.stage.current_total - 2
+    self.stages_passed = save.stage.current_total - 1
     self.time_start = save.time.start
     self.time_total = save.time.total
     hud.minute, hud.second = seconds_to_minutes(save.time.start)
@@ -291,6 +304,7 @@ function load_from_slot(self)
     gm.save_stat_increment(gm.survivor_get_stat_key_games_played(player.class), -1)
 
     print("Loaded from slot "..__current)
+    _is_loading = false
 end
 
 
